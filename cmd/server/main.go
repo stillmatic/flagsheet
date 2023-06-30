@@ -46,6 +46,8 @@ func (s *FeatureSheetServer) Evaluate(
 	return res, nil
 }
 
+func ok(_ http.ResponseWriter, _ *http.Request) {}
+
 func main() {
 	// copy these from client_secret.json
 	if os.Getenv("GCP_PROJECT_ID") == "" {
@@ -94,6 +96,7 @@ func main() {
 		"featuresheet.v1.FeatureSheetService",
 	)
 	mux.Handle(grpchealth.NewHandler(checker))
+	mux.Handle("/health", http.HandlerFunc(ok))
 	portNum := os.Getenv("PORT")
 	if portNum == "" {
 		portNum = "8080"
