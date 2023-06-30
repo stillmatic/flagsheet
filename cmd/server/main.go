@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"os"
 	"time"
@@ -15,6 +16,11 @@ import (
 	"github.com/stillmatic/featuresheet"
 	fsv1 "github.com/stillmatic/featuresheet/gen/featuresheet/v1"
 	"github.com/stillmatic/featuresheet/gen/featuresheet/v1/featuresheetv1connect"
+)
+
+const (
+	featureSheetVersionKey   = "FeatureSheet-Version"
+	featureSheetVersionValue = "v1"
 )
 
 type FeatureSheetServer struct {
@@ -35,17 +41,31 @@ func (s *FeatureSheetServer) Evaluate(
 	res := connect.NewResponse(&fsv1.EvaluateResponse{
 		Variant: string(fv),
 	})
-	res.Header().Set("FeatureSheet-Version", "v1")
+	res.Header().Set(featureSheetVersionKey, featureSheetVersionValue)
 	return res, nil
 }
 
 func main() {
-	data, err := os.ReadFile("client_secret.json")
+	// copy these from client_secret.json
+	serviceAccountJSON := map[string]interface{}{
+		"type":                        "service_account",
+		"project_id":                  os.Getenv("GCP_PROJECT_ID"),
+		"private_key_id":              os.Getenv("GCP_PRIVATE_KEY_ID"),
+		"private_key":                 os.Getenv("GCP_PRIVATE_KEY"),
+		"client_email":                os.Getenv("GCP_CLIENT_EMAIL"),
+		"client_id":                   os.Getenv("GCP_CLIENT_ID"),
+		"auth_uri":                    os.Getenv("GCP_AUTH_URI"),
+		"token_uri":                   os.Getenv("GCP_TOKEN_URI"),
+		"auth_provider_x509_cert_url": os.Getenv("GCP_AUTH_PROVIDER_CERT_URL"),
+		"client_x509_cert_url":        os.Getenv("GCP_CLIENT_CERT_URL"),
+	}
+
+	serviceAccountJSONBytes, err := json.Marshal(serviceAccountJSON)
 	if err != nil {
 		panic(err)
 	}
 
-	conf, err := google.JWTConfigFromJSON(data, spreadsheet.Scope)
+	conf, err := google.JWTConfigFromJSON(serviceAccountJSONBytes, spreadsheet.Scope)
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +74,7 @@ func main() {
 		panic("SPREADSHEET_ID env var must be set")
 	}
 
-	client := conf.Client(context.TODO())
+	client := conf.Client(context.Background())
 	service := spreadsheet.NewServiceWithClient(client)
 	fs, err := featuresheet.NewFeatureSheet(service, spreadsheetID, 10*time.Second)
 	if err != nil {
