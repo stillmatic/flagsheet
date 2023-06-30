@@ -62,15 +62,15 @@ type FeatureSheet struct {
 
 // Evaluate returns the feature variant for a given flagName and id
 // if the feature does not exist, it returns an empty string and false
-func (f *featureSheet) Evaluate(key string, id *string) (FeatureValue, bool) {
+func (f *featureSheet) Evaluate(key string, id *string) (FeatureValue, error) {
 	feature, ok := f.fmap[key]
 	if !ok {
-		return "", false
+		return "", fmt.Errorf("feature %s not found", key)
 	}
-	// get the layer
+	// get the layer -- this should not error
 	layer, ok := f.lmap[feature.LayerName]
 	if !ok {
-		return "", false
+		return "", fmt.Errorf("layer %s not found", feature.LayerName)
 	}
 	// get the bucket - essentially hash(id) % 100
 	// if id is nil, pick a random number
@@ -92,7 +92,7 @@ func (f *featureSheet) Evaluate(key string, id *string) (FeatureValue, bool) {
 	}
 	// get the feature value
 	fv := layer.buckets[bucket]
-	return fv, true
+	return fv, nil
 }
 
 func (f *featureSheet) Refresh() error {

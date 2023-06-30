@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package featuresheet.v1;
+
+option go_package = "github.com/stillmatic/featuresheet/gen/featuresheet/v1;featuresheetv1";
+
+message EvaluateRequest {
+    string feature = 1;
+    string entity_id = 2;
+}
+
+message EvaluateResponse {
+    string variant = 1;
+}
+
+service FeatureSheetService {
+    rpc Evaluate(EvaluateRequest) returns (EvaluateResponse);
+}

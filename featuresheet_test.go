@@ -30,8 +30,8 @@ func TestSheet(t *testing.T) {
 	spreadsheet, err := featuresheet.NewFeatureSheet(service, testSpreadsheetID, 1*time.Second)
 	assert.NoError(t, err)
 	assert.NotNil(t, spreadsheet)
-	fv, ok := spreadsheet.Evaluate("my_key", stringPtr("my_id"))
-	assert.True(t, ok)
+	fv, err := spreadsheet.Evaluate("my_key", stringPtr("my_id"))
+	assert.Nil(t, err)
 	assert.NotEmpty(t, fv)
 	assert.Equal(t, "foo", string(fv))
 }
@@ -51,8 +51,8 @@ func BenchmarkEvaluate(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		fv, ok := spreadsheet.Evaluate("my_key", stringPtr("my_id"))
-		assert.True(b, ok)
+		fv, err := spreadsheet.Evaluate("my_key", stringPtr("my_id"))
+		assert.Nil(b, err)
 		assert.NotEmpty(b, fv)
 		assert.Equal(b, "foo", string(fv))
 	}
