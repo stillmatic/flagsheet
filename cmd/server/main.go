@@ -13,6 +13,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"gopkg.in/Iwark/spreadsheet.v2"
 
+	grpchealth "github.com/bufbuild/connect-grpchealth-go"
 	"github.com/stillmatic/featuresheet"
 	fsv1 "github.com/stillmatic/featuresheet/gen/featuresheet/v1"
 	"github.com/stillmatic/featuresheet/gen/featuresheet/v1/featuresheetv1connect"
@@ -47,6 +48,9 @@ func (s *FeatureSheetServer) Evaluate(
 
 func main() {
 	// copy these from client_secret.json
+	if os.Getenv("GCP_PROJECT_ID") == "" {
+		panic("GCP_PROJECT_ID env var must be set")
+	}
 	serviceAccountJSON := map[string]interface{}{
 		"type":                        "service_account",
 		"project_id":                  os.Getenv("GCP_PROJECT_ID"),
@@ -59,12 +63,10 @@ func main() {
 		"auth_provider_x509_cert_url": os.Getenv("GCP_AUTH_PROVIDER_CERT_URL"),
 		"client_x509_cert_url":        os.Getenv("GCP_CLIENT_CERT_URL"),
 	}
-
 	serviceAccountJSONBytes, err := json.Marshal(serviceAccountJSON)
 	if err != nil {
 		panic(err)
 	}
-
 	conf, err := google.JWTConfigFromJSON(serviceAccountJSONBytes, spreadsheet.Scope)
 	if err != nil {
 		panic(err)
@@ -80,12 +82,18 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	// serving
 	s := &FeatureSheetServer{
 		fs: fs,
 	}
 	mux := http.NewServeMux()
 	path, handler := featuresheetv1connect.NewFeatureSheetServiceHandler(s)
 	mux.Handle(path, handler)
+	checker := grpchealth.NewStaticChecker(
+		"featuresheet.v1.FeatureSheetService",
+	)
+	mux.Handle(grpchealth.NewHandler(checker))
 	portNum := os.Getenv("PORT")
 	if portNum == "" {
 		portNum = "8080"
