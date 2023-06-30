@@ -1,6 +1,6 @@
 # FeatureSheet
 
-A thread-safe, high performance feature flagging library - with a Google Sheets backend. 
+The easiest way to do feature flagging - just use Google sheets!
 
 It's as easy as creating a new spreadsheet like this:
 
@@ -16,7 +16,7 @@ It's as easy as creating a new spreadsheet like this:
 
 (we actually don't use the key at all, but it's useful for humans to read)
 
-And using it in your code like this:
+The library can be used as an in-memory cache like this:
 
 ```go
 fv, ok := fs.Evaluate("my_key", "user123")
@@ -31,6 +31,9 @@ case "bar":
 }
 ```
 
+Or as a service, which you can connect to from any language via the excellent [Connect](https://connect.build/) platform, including via just CURL / REST. 
+
+
 The library will automatically refresh the cache on a cadence of your choosing. 
 
 
@@ -38,10 +41,17 @@ The library will automatically refresh the cache on a cadence of your choosing.
 
 - Lowest common denominator -- everybody can use Google Sheets
 - Easy evaluation API
+    - We use [Connect](https://connect.build/) for high performance, language-agnostic serving
+    - Generating clients is very easy in different languages
 - Approximately free to use
+    - API is free, very very low memory and CPU usage, no storage
 - Reasonable defaults and error handling
     - If weights sum over 1000, we will throw an error
     - If weights sum under 1000, we will return empty string for default values
+- Built-in and free audit logging
+    - Just check the Google sheets revision history
+- Bulit-in and free RBAC
+    - Just use Google Sheets permissions
 - MIT license
 
 Much of the concurrency logic is borrowed from [go-cache](https://github.com/patrickmn/go-cache/tree/master). We optimize it slightly as we refresh the entire cache at once, rather than on a per-key basis.
@@ -53,6 +63,15 @@ An extremely simple benchmark -
 cpu: AMD Ryzen 9 7950X 16-Core Processor            
 BenchmarkEvaluate-32    	 4331403	       283.5 ns/op	      96 B/op	       3 allocs/op
 ```
+
+Via the loadtest GRPC client at 100 qps / 10 seconds
+
+```
+2023/06/30 15:01:53 total: 206.777206ms, count: 1000
+2023/06/30 15:01:53 avg: 206.777µs, p90: 295.25µs, p99: 575.208µs
+```
+
+It's literally an in-memory cache, I don't think it can get much faster (or simpler).
 
 ### Caveats
 

@@ -3,6 +3,7 @@ package featuresheet
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"math/rand"
 	"runtime"
 	"strconv"
@@ -73,20 +74,20 @@ func (f *featureSheet) Evaluate(key string, id *string) (FeatureValue, error) {
 		return "", fmt.Errorf("layer %s not found", feature.LayerName)
 	}
 	// get the bucket - essentially hash(id) % 100
-	// if id is nil, pick a random number
 	var bucket int
-	// build hash input with bytes.Buffer
-	// this should be very fast
-	var bb bytes.Buffer
-	bb.WriteString(*id)
-	bb.WriteString("-")
-	bb.WriteString(layer.Name)
-	bb.WriteString("-")
-	bb.WriteString(strconv.Itoa(layer.Version))
 
+	// if id is nil, pick a random number
 	if id == nil {
 		bucket = rand.Intn(100)
 	} else {
+		// build hash input with bytes.Buffer
+		// this should be very fast
+		var bb bytes.Buffer
+		bb.WriteString(*id)
+		bb.WriteString("-")
+		bb.WriteString(layer.Name)
+		bb.WriteString("-")
+		bb.WriteString(strconv.Itoa(layer.Version))
 		h := mmh3.Hash32(bb.Bytes())
 		bucket = int(h % 100)
 	}
@@ -188,7 +189,10 @@ func (j *janitor) Run(c *featureSheet) {
 	for {
 		select {
 		case <-ticker.C:
-			c.Refresh()
+			err := c.Refresh()
+			if err != nil {
+				log.Printf("failed to refresh feature sheet: %v", err)
+			}
 		case <-j.stop:
 			ticker.Stop()
 			return
