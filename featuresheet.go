@@ -19,6 +19,10 @@ type (
 	FlagName     string
 )
 
+const (
+	maxBuckets = 1000
+)
+
 type FeatureVariant struct {
 	Value      FeatureValue
 	Percentage int
@@ -119,7 +123,7 @@ func (f *featureSheet) Refresh() error {
 		layerMap[layerName] = Layer{
 			Name:    layerName,
 			Version: layerVersion,
-			buckets: make([]FeatureValue, 1000),
+			buckets: make([]FeatureValue, maxBuckets),
 		}
 	}
 
@@ -141,7 +145,7 @@ func (f *featureSheet) Refresh() error {
 		if !ok {
 			return fmt.Errorf("layer %s does not exist", layerName)
 		}
-		if pct+layer.cnt > 1000 {
+		if pct+layer.cnt > maxBuckets {
 			return fmt.Errorf("layer %s does not have enough buckets", layerName)
 		}
 		// add to layer
@@ -167,7 +171,7 @@ func (f *featureSheet) Refresh() error {
 	}
 	// validate
 	for _, layer := range layerMap {
-		if layer.cnt > 1000 {
+		if layer.cnt > maxBuckets {
 			return fmt.Errorf("layer %s has too many buckets", layer.Name)
 		}
 	}

@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	qps         = 100 // configure your QPS here
-	testSeconds = 10  // configure your test duration here
+	qps         = 1000 // configure your QPS here
+	testSeconds = 10   // configure your test duration here
 )
 
 func main() {

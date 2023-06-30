@@ -14,8 +14,6 @@ It's as easy as creating a new spreadsheet like this:
 | overlapping_key  | b     | car   | 10                            |
 | overlapping_key  | b     | dag   | 480                           |
 
-(we actually don't use the key at all, but it's useful for humans to read)
-
 The library can be used as an in-memory cache like this:
 
 ```go
