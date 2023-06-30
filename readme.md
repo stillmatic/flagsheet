@@ -14,26 +14,14 @@ It's as easy as creating a new spreadsheet like this:
 | overlapping_key  | b     | car   | 10                            |
 | overlapping_key  | b     | dag   | 480                           |
 
-The library can be used as an in-memory cache like this:
+You should create a layers tab too:
 
-```go
-fv, ok := fs.Evaluate("my_key", "user123")
-if !ok {
-    // error handling
-}
-switch fv {
-case "foo":
-    // do something
-case "bar":
-    // do something else
-}
-```
+| Layer | Version |
+|-------|---------|
+| a     | 1       |
+| b     | 2       |
 
-Or as a service, which you can connect to from any language via the excellent [Connect](https://connect.build/) platform, including via just CURL / REST. 
-
-
-The library will automatically refresh the cache on a cadence of your choosing. 
-
+You can view an [example sheet](https://docs.google.com/spreadsheets/d/15_oV5NcvYK7wK3VVD5ol6KVkWHzPLFl22c1QyLYplpU/edit#gid=0).
 
 ### Features
 
@@ -43,6 +31,7 @@ The library will automatically refresh the cache on a cadence of your choosing.
     - Generating clients is very easy in different languages
 - Approximately free to use
     - API is free, very very low memory and CPU usage, no storage
+- Automatic refresh
 - Reasonable defaults and error handling
     - If weights sum over 1000, we will throw an error
     - If weights sum under 1000, we will return empty string for default values
@@ -57,11 +46,12 @@ It's literally an in-memory cache, I don't think it can get much faster (or simp
 ```
 cpu: AMD Ryzen 9 7950X 16-Core Processor            
 BenchmarkEvaluate-32    	 4331403	       283.5 ns/op	      96 B/op	       3 allocs/op
+
 2023/06/30 15:01:53 total: 206.777206ms, count: 1000
 2023/06/30 15:01:53 avg: 206.777µs, p90: 295.25µs, p99: 575.208µs
 ```
 
-Your bottleneck will be HTTP to your server, not this library. In your client, I suggest adding a cache 
+Your bottleneck will be HTTP to your server, not this library. I suggest caching client-side. If it's run in memory, it should not have much overhead.
 
 ### Caveats
 
@@ -100,7 +90,23 @@ assert.True(t, ok)
 assert.NotEmpty(t, fv)
 ```
 
-You can view an [example sheet](https://docs.google.com/spreadsheets/d/15_oV5NcvYK7wK3VVD5ol6KVkWHzPLFl22c1QyLYplpU/edit#gid=0).
+The library can be used as an in-memory cache like this:
+
+```go
+fv, ok := fs.Evaluate("my_key", "user123")
+if !ok {
+    // error handling
+}
+switch fv {
+case "foo":
+    // do something
+case "bar":
+    // do something else
+}
+```
+
+Or as a service, which you can connect to from any language via the excellent [Connect](https://connect.build/) platform, including via just CURL / REST. 
+
 
 # Notes
 
