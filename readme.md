@@ -54,24 +54,16 @@ The library will automatically refresh the cache on a cadence of your choosing.
     - Just use Google Sheets permissions
 - MIT license
 
-Much of the concurrency logic is borrowed from [go-cache](https://github.com/patrickmn/go-cache/tree/master). We optimize it slightly as we refresh the entire cache at once, rather than on a per-key basis.
-
-
-An extremely simple benchmark - 
+It's literally an in-memory cache, I don't think it can get much faster (or simpler).
 
 ```
 cpu: AMD Ryzen 9 7950X 16-Core Processor            
 BenchmarkEvaluate-32    	 4331403	       283.5 ns/op	      96 B/op	       3 allocs/op
-```
-
-Via the loadtest GRPC client at 100 qps / 10 seconds
-
-```
 2023/06/30 15:01:53 total: 206.777206ms, count: 1000
 2023/06/30 15:01:53 avg: 206.777µs, p90: 295.25µs, p99: 575.208µs
 ```
 
-It's literally an in-memory cache, I don't think it can get much faster (or simpler).
+Your bottleneck will be HTTP to your server, not this library. In your client, I suggest adding a cache 
 
 ### Caveats
 
@@ -124,3 +116,10 @@ If you have a large number of feature flags, this library may do a lot of work p
 The library internally uses the murmurhash3 algorithm. This is fairly arbitrary but I can't imagine a great argument _against_ it.
 
 We do not support non-string variant values. I can see why it would be reasonable to do so (eg supporting integers), but I think it's a bit of a slippery slope, I have seen some truly horrific abuse of lists, maps, etc in this context. I also don't want to deal with converting types etc, but you can of course do the casting yourself.
+
+
+# References
+
+The basic experimental design is inspired by Google's [Overlapping Experiment Infrastructure](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36500.pdf). It is also broadly similar to what we used at [Quora](https://quoradata.quora.com/The-Essential-Reading-Guide-to-industry-practice-of-Controlled-experiments-and-Causal-inferences), though obviously much simpler.
+
+Much of the concurrency logic is borrowed from [go-cache](https://github.com/patrickmn/go-cache/tree/master). We optimize it slightly for our use case, as we refresh the entire cache at once, rather than on a per-key basis.
