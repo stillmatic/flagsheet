@@ -1,4 +1,4 @@
-# FeatureSheet
+# FlagSheet
 
 The easiest way to do feature flagging - just use Google sheets!
 
@@ -78,11 +78,11 @@ client := conf.Client(context.TODO())
 service := spreadsheet.NewServiceWithClient(client)
 ```
 
-Instantiate a FeatureSheet client:
+Instantiate a FlagSheet client:
 
 ```go
 spreadsheetID := "15_oV5NcvYK7wK3VVD5ol6KVkWHzPLFl22c1QyLYplpU"
-fs, err := featuresheet.NewFeatureSheet(service, spreadsheetID, 1*time.Second)
+fs, err := flagsheet.NewFlagSheet(service, spreadsheetID, 1*time.Second)
 assert.NoError(t, err)
 assert.NotNil(t, spreadsheet)
 fv, ok := fs.Get("custom_backend")

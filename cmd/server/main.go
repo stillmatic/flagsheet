@@ -14,21 +14,21 @@ import (
 	"gopkg.in/Iwark/spreadsheet.v2"
 
 	grpchealth "github.com/bufbuild/connect-grpchealth-go"
-	"github.com/stillmatic/featuresheet"
-	fsv1 "github.com/stillmatic/featuresheet/gen/featuresheet/v1"
-	"github.com/stillmatic/featuresheet/gen/featuresheet/v1/featuresheetv1connect"
+	"github.com/stillmatic/flagsheet"
+	fsv1 "github.com/stillmatic/flagsheet/gen/flagsheet/v1"
+	"github.com/stillmatic/flagsheet/gen/flagsheet/v1/flagsheetv1connect"
 )
 
 const (
-	featureSheetVersionKey   = "FeatureSheet-Version"
-	featureSheetVersionValue = "v1"
+	flagSheetVersionKey   = "FlagSheet-Version"
+	flagSheetVersionValue = "v1"
 )
 
-type FeatureSheetServer struct {
-	fs *featuresheet.FeatureSheet
+type FlagSheetServer struct {
+	fs *flagsheet.FlagSheet
 }
 
-func (s *FeatureSheetServer) Evaluate(
+func (s *FlagSheetServer) Evaluate(
 	ctx context.Context,
 	req *connect.Request[fsv1.EvaluateRequest],
 ) (*connect.Response[fsv1.EvaluateResponse], error) {
@@ -42,7 +42,7 @@ func (s *FeatureSheetServer) Evaluate(
 	res := connect.NewResponse(&fsv1.EvaluateResponse{
 		Variant: string(fv),
 	})
-	res.Header().Set(featureSheetVersionKey, featureSheetVersionValue)
+	res.Header().Set(flagSheetVersionKey, flagSheetVersionValue)
 	return res, nil
 }
 
@@ -80,20 +80,20 @@ func main() {
 
 	client := conf.Client(context.Background())
 	service := spreadsheet.NewServiceWithClient(client)
-	fs, err := featuresheet.NewFeatureSheet(service, spreadsheetID, 10*time.Second)
+	fs, err := flagsheet.NewFlagSheet(service, spreadsheetID, 10*time.Second)
 	if err != nil {
 		panic(err)
 	}
 
 	// serving
-	s := &FeatureSheetServer{
+	s := &FlagSheetServer{
 		fs: fs,
 	}
 	mux := http.NewServeMux()
-	path, handler := featuresheetv1connect.NewFeatureSheetServiceHandler(s)
+	path, handler := flagsheetv1connect.NewFlagSheetServiceHandler(s)
 	mux.Handle(path, handler)
 	checker := grpchealth.NewStaticChecker(
-		"featuresheet.v1.FeatureSheetService",
+		"flagsheet.v1.FlagSheetService",
 	)
 	mux.Handle(grpchealth.NewHandler(checker))
 	mux.Handle("/health", http.HandlerFunc(ok))

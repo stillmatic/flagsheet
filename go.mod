@@ -1,4 +1,4 @@
-module github.com/stillmatic/featuresheet
+module github.com/stillmatic/flagsheet
 
 go 1.20
 

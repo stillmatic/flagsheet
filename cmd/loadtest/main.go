@@ -10,8 +10,8 @@ import (
 
 	"github.com/bufbuild/connect-go"
 
-	fsv1 "github.com/stillmatic/featuresheet/gen/featuresheet/v1"
-	"github.com/stillmatic/featuresheet/gen/featuresheet/v1/featuresheetv1connect"
+	fsv1 "github.com/stillmatic/flagsheet/gen/flagsheet/v1"
+	"github.com/stillmatic/flagsheet/gen/flagsheet/v1/flagsheetv1connect"
 )
 
 var (
@@ -20,7 +20,7 @@ var (
 )
 
 func main() {
-	client := featuresheetv1connect.NewFeatureSheetServiceClient(
+	client := flagsheetv1connect.NewFlagSheetServiceClient(
 		http.DefaultClient,
 		"http://localhost:8080",
 	)

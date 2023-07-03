@@ -1,4 +1,4 @@
-package featuresheet
+package flagsheet
 
 import (
 	"bytes"
@@ -49,8 +49,8 @@ type Layer struct {
 	cnt int
 }
 
-// featureSheet is an internal representation for goroutine purposes.
-type featureSheet struct {
+// flagSheet is an internal representation for goroutine purposes.
+type flagSheet struct {
 	sheetID    string
 	service    *spreadsheet.Service
 	expiration time.Duration
@@ -61,13 +61,13 @@ type featureSheet struct {
 	fmap    map[string]Feature
 }
 
-type FeatureSheet struct {
-	*featureSheet
+type FlagSheet struct {
+	*flagSheet
 }
 
 // Evaluate returns the feature variant for a given flagName and id
 // if the feature does not exist, it returns an empty string and false
-func (f *featureSheet) Evaluate(key string, id *string) (FeatureValue, error) {
+func (f *flagSheet) Evaluate(key string, id *string) (FeatureValue, error) {
 	feature, ok := f.fmap[key]
 	if !ok {
 		return "", fmt.Errorf("feature %s not found", key)
@@ -100,7 +100,7 @@ func (f *featureSheet) Evaluate(key string, id *string) (FeatureValue, error) {
 	return fv, nil
 }
 
-func (f *featureSheet) Refresh() error {
+func (f *flagSheet) Refresh() error {
 	// get spreadsheet
 	spreadsheet, err := f.service.FetchSpreadsheet(f.sheetID)
 	if err != nil {
@@ -188,7 +188,7 @@ type janitor struct {
 	stop     chan bool
 }
 
-func (j *janitor) Run(c *featureSheet) {
+func (j *janitor) Run(c *flagSheet) {
 	ticker := time.NewTicker(j.Interval)
 	for {
 		select {
@@ -204,11 +204,11 @@ func (j *janitor) Run(c *featureSheet) {
 	}
 }
 
-func stopJanitor(c *FeatureSheet) {
+func stopJanitor(c *FlagSheet) {
 	c.janitor.stop <- true
 }
 
-func runJanitor(c *featureSheet, ci time.Duration) {
+func runJanitor(c *flagSheet, ci time.Duration) {
 	j := &janitor{
 		Interval: ci,
 		stop:     make(chan bool),
@@ -217,8 +217,8 @@ func runJanitor(c *featureSheet, ci time.Duration) {
 	go j.Run(c)
 }
 
-func NewFeatureSheet(service *spreadsheet.Service, sheetID string, duration time.Duration) (*FeatureSheet, error) {
-	fs := &featureSheet{
+func NewFlagSheet(service *spreadsheet.Service, sheetID string, duration time.Duration) (*FlagSheet, error) {
+	fs := &flagSheet{
 		sheetID:    sheetID,
 		service:    service,
 		expiration: duration,
@@ -226,7 +226,7 @@ func NewFeatureSheet(service *spreadsheet.Service, sheetID string, duration time
 	if err := fs.Refresh(); err != nil {
 		return nil, err
 	}
-	FS := &FeatureSheet{fs}
+	FS := &FlagSheet{fs}
 	if duration > 0 {
 		runJanitor(fs, duration)
 		runtime.SetFinalizer(FS, stopJanitor)

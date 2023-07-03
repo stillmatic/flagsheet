@@ -1,4 +1,4 @@
-package featuresheet_test
+package flagsheet_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stillmatic/featuresheet"
+	"github.com/stillmatic/flagsheet"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/google"
 	"gopkg.in/Iwark/spreadsheet.v2"
@@ -27,7 +27,7 @@ func TestSheet(t *testing.T) {
 
 	client := conf.Client(context.TODO())
 	service := spreadsheet.NewServiceWithClient(client)
-	spreadsheet, err := featuresheet.NewFeatureSheet(service, testSpreadsheetID, 1*time.Second)
+	spreadsheet, err := flagsheet.NewFlagSheet(service, testSpreadsheetID, 1*time.Second)
 	assert.NoError(t, err)
 	assert.NotNil(t, spreadsheet)
 	fv, err := spreadsheet.Evaluate("my_key", stringPtr("my_id"))
@@ -45,7 +45,7 @@ func BenchmarkEvaluate(b *testing.B) {
 
 	client := conf.Client(context.TODO())
 	service := spreadsheet.NewServiceWithClient(client)
-	spreadsheet, err := featuresheet.NewFeatureSheet(service, testSpreadsheetID, 1*time.Second)
+	spreadsheet, err := flagsheet.NewFlagSheet(service, testSpreadsheetID, 1*time.Second)
 	assert.NoError(b, err)
 	assert.NotNil(b, spreadsheet)
 	b.ResetTimer()

@@ -6,18 +6,18 @@ import (
 	"net/http"
 
 	"github.com/bufbuild/connect-go"
-	featuresheetv1 "github.com/stillmatic/featuresheet/gen/featuresheet/v1"
-	"github.com/stillmatic/featuresheet/gen/featuresheet/v1/featuresheetv1connect"
+	flagsheetv1 "github.com/stillmatic/flagsheet/gen/flagsheet/v1"
+	"github.com/stillmatic/flagsheet/gen/flagsheet/v1/flagsheetv1connect"
 )
 
 func main() {
-	client := featuresheetv1connect.NewFeatureSheetServiceClient(
+	client := flagsheetv1connect.NewFlagSheetServiceClient(
 		http.DefaultClient,
 		"http://localhost:8080",
 	)
 	res, err := client.Evaluate(
 		context.Background(),
-		connect.NewRequest(&featuresheetv1.EvaluateRequest{
+		connect.NewRequest(&flagsheetv1.EvaluateRequest{
 			Feature:  "my_key",
 			EntityId: "my_id",
 		}),

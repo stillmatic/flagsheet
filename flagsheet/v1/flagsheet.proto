@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package featuresheet.v1;
+package flagsheet.v1;
 
-option go_package = "github.com/stillmatic/featuresheet/gen/featuresheet/v1;featuresheetv1";
+option go_package = "github.com/stillmatic/flagsheet/gen/flagsheet/v1;flagsheetv1";
 
 message EvaluateRequest {
     string feature = 1;
@@ -13,6 +13,6 @@ message EvaluateResponse {
     string variant = 1;
 }
 
-service FeatureSheetService {
+service FlagSheetService {
     rpc Evaluate(EvaluateRequest) returns (EvaluateResponse);
 }
