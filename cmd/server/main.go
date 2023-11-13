@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"os"
 	"time"
@@ -10,8 +9,6 @@ import (
 	"github.com/bufbuild/connect-go"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
-	"golang.org/x/oauth2/google"
-	"gopkg.in/Iwark/spreadsheet.v2"
 
 	grpchealth "github.com/bufbuild/connect-grpchealth-go"
 	"github.com/stillmatic/flagsheet"
@@ -49,37 +46,16 @@ func (s *FlagSheetServer) Evaluate(
 func ok(_ http.ResponseWriter, _ *http.Request) {}
 
 func main() {
-	// copy these from client_secret.json
-	if os.Getenv("GCP_PROJECT_ID") == "" {
-		panic("GCP_PROJECT_ID env var must be set")
-	}
-	serviceAccountJSON := map[string]interface{}{
-		"type":                        "service_account",
-		"project_id":                  os.Getenv("GCP_PROJECT_ID"),
-		"private_key_id":              os.Getenv("GCP_PRIVATE_KEY_ID"),
-		"private_key":                 os.Getenv("GCP_PRIVATE_KEY"),
-		"client_email":                os.Getenv("GCP_CLIENT_EMAIL"),
-		"client_id":                   os.Getenv("GCP_CLIENT_ID"),
-		"auth_uri":                    os.Getenv("GCP_AUTH_URI"),
-		"token_uri":                   os.Getenv("GCP_TOKEN_URI"),
-		"auth_provider_x509_cert_url": os.Getenv("GCP_AUTH_PROVIDER_CERT_URL"),
-		"client_x509_cert_url":        os.Getenv("GCP_CLIENT_CERT_URL"),
-	}
-	serviceAccountJSONBytes, err := json.Marshal(serviceAccountJSON)
+	service, err := flagsheet.NewSpreadsheetServiceFromEnv(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	conf, err := google.JWTConfigFromJSON(serviceAccountJSONBytes, spreadsheet.Scope)
-	if err != nil {
-		panic(err)
-	}
+
 	spreadsheetID := os.Getenv("SPREADSHEET_ID")
 	if spreadsheetID == "" {
 		panic("SPREADSHEET_ID env var must be set")
 	}
 
-	client := conf.Client(context.Background())
-	service := spreadsheet.NewServiceWithClient(client)
 	fs, err := flagsheet.NewFlagSheet(service, spreadsheetID, 10*time.Second)
 	if err != nil {
 		panic(err)

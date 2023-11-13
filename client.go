@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/Yiling-J/theine-go"
@@ -26,11 +25,7 @@ type FlagClient struct {
 	duration time.Duration
 }
 
-func NewFlagClient() *FlagClient {
-	flagsURL := os.Getenv("flagsheet_URL")
-	if flagsURL == "" {
-		panic("flagsheet_URL env var must be set")
-	}
+func NewFlagClient(flagsURL string) *FlagClient {
 	flagsClient := flagsheetv1connect.NewFlagSheetServiceClient(http.DefaultClient, flagsURL)
 	cache, err := theine.NewBuilder[flagQuery, string](1024).Build()
 	if err != nil {

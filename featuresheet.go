@@ -2,15 +2,19 @@ package flagsheet
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"runtime"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/datadog/mmh3"
+	"golang.org/x/oauth2/google"
 	"gopkg.in/Iwark/spreadsheet.v2"
 )
 
@@ -233,4 +237,36 @@ func NewFlagSheet(service *spreadsheet.Service, sheetID string, duration time.Du
 	}
 
 	return FS, nil
+}
+
+func NewSpreadsheetServiceFromEnv(ctx context.Context) (*spreadsheet.Service, error) {
+	if os.Getenv("GCP_PROJECT_ID") == "" {
+		return nil, fmt.Errorf("GCP_PROJECT_ID not set")
+	}
+	// copy these from client_secret.json
+	serviceAccountJSON := map[string]interface{}{
+		"type":                        "service_account",
+		"project_id":                  os.Getenv("GCP_PROJECT_ID"),
+		"private_key_id":              os.Getenv("GCP_PRIVATE_KEY_ID"),
+		"private_key":                 os.Getenv("GCP_PRIVATE_KEY"),
+		"client_email":                os.Getenv("GCP_CLIENT_EMAIL"),
+		"client_id":                   os.Getenv("GCP_CLIENT_ID"),
+		"auth_uri":                    os.Getenv("GCP_AUTH_URI"),
+		"token_uri":                   os.Getenv("GCP_TOKEN_URI"),
+		"auth_provider_x509_cert_url": os.Getenv("GCP_AUTH_PROVIDER_CERT_URL"),
+		"client_x509_cert_url":        os.Getenv("GCP_CLIENT_CERT_URL"),
+	}
+	serviceAccountJSONBytes, err := json.Marshal(serviceAccountJSON)
+	if err != nil {
+		return nil, err
+	}
+	conf, err := google.JWTConfigFromJSON(serviceAccountJSONBytes, spreadsheet.Scope)
+	if err != nil {
+		return nil, err
+	}
+	client := conf.Client(ctx)
+
+	service := spreadsheet.NewServiceWithClient(client)
+
+	return service, nil
 }
