@@ -1,4 +1,4 @@
-package featuresheet
+package flagsheet
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 
 	"github.com/Yiling-J/theine-go"
 	"github.com/bufbuild/connect-go"
-	featuresheetv1 "github.com/stillmatic/featuresheet/gen/featuresheet/v1"
-	"github.com/stillmatic/featuresheet/gen/featuresheet/v1/featuresheetv1connect"
+	flagsheetv1 "github.com/stillmatic/flagsheet/gen/flagsheet/v1"
+	"github.com/stillmatic/flagsheet/gen/flagsheet/v1/flagsheetv1connect"
 )
 
 type flagQuery struct {
@@ -20,18 +20,18 @@ type flagQuery struct {
 
 type FlagClient struct {
 	// flags is the feature flags client
-	flags featuresheetv1connect.FeatureSheetServiceClient
+	flags flagsheetv1connect.FlagSheetServiceClient
 	// cache stores key value pairs with their result
 	cache    *theine.Cache[flagQuery, string]
 	duration time.Duration
 }
 
 func NewFlagClient() *FlagClient {
-	flagsURL := os.Getenv("FEATURESHEET_URL")
+	flagsURL := os.Getenv("flagsheet_URL")
 	if flagsURL == "" {
-		panic("FEATURESHEET_URL env var must be set")
+		panic("flagsheet_URL env var must be set")
 	}
-	flagsClient := featuresheetv1connect.NewFeatureSheetServiceClient(http.DefaultClient, flagsURL)
+	flagsClient := flagsheetv1connect.NewFlagSheetServiceClient(http.DefaultClient, flagsURL)
 	cache, err := theine.NewBuilder[flagQuery, string](1024).Build()
 	if err != nil {
 		panic(err)
@@ -54,7 +54,7 @@ func (f *FlagClient) Evaluate(ctx context.Context, feature string, entityID stri
 		return val, nil
 	}
 	// cache miss, call and set cache
-	req := connect.NewRequest(&featuresheetv1.EvaluateRequest{
+	req := connect.NewRequest(&flagsheetv1.EvaluateRequest{
 		Feature:  feature,
 		EntityId: entityID,
 	})
