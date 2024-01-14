@@ -104,6 +104,14 @@ func (f *flagSheet) Evaluate(key string, id *string) (FeatureValue, error) {
 	return fv, nil
 }
 
+// EvaluateEnv checks local env for overrides, otherwise calls Evaluate
+func (f *flagSheet) EvaluateEnv(key string, id *string) (FeatureValue, error) {
+	if os.Getenv(key) != "" {
+		return FeatureValue(os.Getenv(key)), nil
+	}
+	return f.Evaluate(key, id)
+}
+
 func (f *flagSheet) Refresh() error {
 	// get spreadsheet
 	spreadsheet, err := f.service.FetchSpreadsheet(f.sheetID)
